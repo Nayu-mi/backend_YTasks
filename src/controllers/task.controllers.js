@@ -118,9 +118,51 @@ async function patchTaskStatus(req, res) { //Muda a conlusão da tarefa
     }
 }
 
+async function putTask(req, res) {
+    const id = req.params.id;
+    const { nome, descricao, dataLimite, concluida } = req.body;
+
+    try {
+        //Verifica se a tarefa existe
+        const tarefa = await prisma.task.findUnique({
+            where: { 
+                id: Number (id)
+            }
+        });
+
+        if ( !tarefa ) {
+            return res.status(404).json({ mensagem: "Tarefa não encontrada" });
+        }
+
+        //Se existir, conclua:
+        const alteraTask = await prisma.task.update({
+            where: {
+                id: Number (id)
+            },
+            data: {
+                nome,
+                descricao,
+                dataLimite,
+                concluida
+            }
+        });
+
+        res.status(200).json({
+            mensagem: "Tarefa alterada com sucesso!",
+            tarefa: alteraTask
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            mensagem: "Erro ao alterar tarefa"
+        })
+    }
+}
+
 module.exports = { 
     postTask,
     getTasks,
     deleteTask,
-    patchTaskStatus
+    patchTaskStatus,
+    putTask
  }
